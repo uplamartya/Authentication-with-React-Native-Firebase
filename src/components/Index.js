@@ -1,11 +1,19 @@
 import React, { Component } from "react";
-import { View, Text, ToastAndroid } from "react-native";
+import {
+  View,
+  Text,
+  ToastAndroid,
+  Image,
+  StyleSheet,
+  Alert
+} from "react-native";
 import LoginForm from "./LoginForm";
 import firebase from "firebase";
 import Button from "./Button";
 import CardSection from "./CardSection";
 import Spinner from "./Spinner";
 import ScreenSpinner from "./ScreenSpinner";
+
 import { thisExpression } from "@babel/types";
 export class Index extends Component {
   constructor() {
@@ -15,7 +23,9 @@ export class Index extends Component {
   state = {
     loggedIn: null,
     name: "",
-    address: ""
+    address: "",
+    image: null,
+    loaded: false
   };
 
   componentDidMount() {
@@ -39,7 +49,8 @@ export class Index extends Component {
             console.log("Usersdata", snapshot.val().name);
             this.setState({
               name: snapshot.val().name,
-              address: snapshot.val().address
+              address: snapshot.val().address,
+              image: snapshot.val().downloadProfilePic
             });
           })
           .catch(err => console.log(err));
@@ -49,33 +60,55 @@ export class Index extends Component {
       }
     });
   }
-
+  onLoad(dataUri) {
+    if (dataUri !== undefined) {
+      this.setState({ loaded: true });
+    }
+  }
   componentWillUnmount() {}
 
   onLogoutPress() {
-    firebase
+    Alert.alert(
+      //title
+      "LogOut",
+      //body
+      "Do you want to LogOut?",
+      [
+        {
+          text: "Yes",
+          onPress: () => {
+            firebase
+              .auth()
+              .signOut()
+              .then(
+                ToastAndroid.show(
+                  "Successfully Logged Out !",
+                  ToastAndroid.SHORT
+                )
+              )
+              .catch(err => console.log(err.message));
+          }
+        },
+        {
+          text: "No",
+          onPress: () => console.log("No Pressed"),
+          style: "cancel"
+        }
+      ],
+      { cancelable: true }
+      //clicking out side of alert will be cancel
+    );
+    /* firebase
       .auth()
       .signOut()
       .then(ToastAndroid.show("Successfully Logged Out !", ToastAndroid.SHORT))
-      .catch(err => console.log(err.message));
+      .catch(err => console.log(err.message)); */
   }
 
   renderComponents() {
     switch (this.state.loggedIn) {
       case true:
-        return (
-          <View>
-            <CardSection>
-              <Text>Name: {this.state.name}</Text>
-            </CardSection>
-            <CardSection>
-              <Text>Address: {this.state.address}</Text>
-            </CardSection>
-            <CardSection>
-              <Button onPress={this.onLogoutPress.bind(this)}>Log Out</Button>
-            </CardSection>
-          </View>
-        );
+        this.props.navigation.replace("Dashboard");
       case false:
         return <LoginForm navigation={this.props.navigation} />;
 
@@ -95,4 +128,11 @@ export class Index extends Component {
     return <View style={{ flex: 1 }}>{this.renderComponents()}</View>;
   }
 }
+
+const Styles = StyleSheet.create({
+  imageHolder: { alignSelf: "center", height: 100, width: 100 },
+  button: {
+    margin: 20
+  }
+});
 export default Index;

@@ -1,5 +1,13 @@
 import React, { Component } from "react";
-import { Text, TextInput } from "react-native";
+import {
+  Text,
+  TextInput,
+  View,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  TouchableWithoutFeedback
+} from "react-native";
 import firebase from "firebase";
 import Button from "./Button";
 import Card from "./Card";
@@ -7,6 +15,8 @@ import CardSection from "./CardSection";
 import CustomTextInput from "./CustomTextInput";
 import Spinner from "./Spinner";
 import Index from "./Index";
+import RNFetchBlob from "react-native-fetch-blob";
+
 export default class SignUpForm extends Component {
   static navigationOptions = {
     title: "Sign Up"
@@ -18,30 +28,52 @@ export default class SignUpForm extends Component {
     name: "",
     address: "",
     error: "",
-    loading: false
+    loading: false,
+    downloadImgUrl: "",
+    hidePass: true
   };
 
-  onSignUpPress() {
-    const { email, password, name, address } = this.state;
+  uploadImage(data) {
+    const image = data.mediaUri;
+    console.log("uri", image);
 
-    if (name == "" || address == "") {
-      this.setState({ error: "Please fill all the fields!!", loading: false });
-    } else {
-      this.setState({ error: "", loading: true });
-      firebase
-        .auth()
-        .createUserWithEmailAndPassword(email, password)
-        .then(this.onSignUpSuccess.bind(this))
-        .catch(err => {
-          console.log(err.message),
-            this.setState({ error: err.message, loading: false });
-        });
-    }
+    const Blob = RNFetchBlob.polyfill.Blob;
+    const fs = RNFetchBlob.fs;
+    window.XMLHttpRequest = RNFetchBlob.polyfill.XMLHttpRequest;
+    window.Blob = Blob;
+
+    let uploadBlob = null;
+    const imageRef = firebase
+      .storage()
+      .ref("posts")
+      .child("test.jpg");
+    let mime = "image/jpg";
+    fs.readFile(image, "base64")
+      .then(data => {
+        return Blob.build(data, { type: `${mime};BASE64` });
+      })
+      .then(blob => {
+        uploadBlob = blob;
+        return imageRef.put(blob, { contentType: mime });
+      })
+      .then(() => {
+        uploadBlob.close();
+        return imageRef.getDownloadURL();
+      })
+      .then(url => {
+        // URL of the image uploaded on Firebase storage
+        this.setState({ downloadImgUrl: url });
+        this.SaveDataToDb();
+        console.log("State", this.state.downloadImgUrl);
+        console.log("url", url);
+      })
+      .catch(error => {
+        console.log(error);
+      });
   }
 
-  onSignUpSuccess() {
-    const { name, address } = this.state;
-
+  SaveDataToDb() {
+    const { name, address, downloadImgUrl } = this.state;
     firebase.auth().onAuthStateChanged(user => {
       if (user) {
         firebase
@@ -50,7 +82,8 @@ export default class SignUpForm extends Component {
           .child(user.uid)
           .set({
             name: name,
-            address: address
+            address: address,
+            downloadProfilePic: downloadImgUrl
           })
           .then(data => {
             //success callback
@@ -72,8 +105,35 @@ export default class SignUpForm extends Component {
       address: "",
       loading: false,
       error: ""
-    }),
-      this.props.navigation.navigate("Index");
+    });
+    this.props.navigation.navigate("Index");
+  }
+  onSignUpPress() {
+    const { email, password, name, address } = this.state;
+    let photo = this.props.navigation.getParam("photo", "empty");
+    if (name == "" || address == "" || photo == "empty") {
+      this.setState({
+        error: "Please fill all the fields & Select Photo!!",
+        loading: false
+      });
+    } else {
+      this.setState({ error: "", loading: true });
+      firebase
+        .auth()
+        .createUserWithEmailAndPassword(email, password)
+        .then(this.onSignUpSuccess.bind(this))
+        .catch(err => {
+          console.log(err.message),
+            this.setState({ error: err.message, loading: false });
+        });
+    }
+  }
+
+  onSignUpSuccess() {
+    let photo = this.props.navigation.getParam("photo", "empty");
+    if (photo !== "empty") {
+      this.uploadImage(photo);
+    }
   }
 
   renderButton() {
@@ -85,8 +145,35 @@ export default class SignUpForm extends Component {
   }
 
   render() {
+    let photo = this.props.navigation.getParam("photo", "empty");
     return (
       <Card>
+        <CardSection>
+          <View
+            style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+          >
+            <TouchableWithoutFeedback
+              onPress={() => this.props.navigation.navigate("CameraSc")}
+            >
+              <Image
+                resizeMode="center"
+                style={Styles.imageHolder}
+                source={
+                  photo === "empty"
+                    ? require("../asset/email.png")
+                    : { uri: photo.mediaUri }
+                }
+              />
+            </TouchableWithoutFeedback>
+            <TouchableOpacity
+              onPress={() => this.props.navigation.navigate("CameraSc")}
+            >
+              <Text style={{ color: "#0A79DF", padding: 5 }}>
+                Change Profile Pic
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </CardSection>
         <CardSection>
           <CustomTextInput
             label="Email"
@@ -98,12 +185,19 @@ export default class SignUpForm extends Component {
         <CardSection>
           <CustomTextInput
             label="Password"
-            secureTextEntry
+            secureTextEntry={this.state.hidePass}
             placeholder="********"
             value={this.state.password}
             onChangeText={text => this.setState({ password: text })}
           />
+          <TouchableOpacity
+            onPressIn={() => this.setState({ hidePass: !this.state.hidePass })}
+            onPressOut={() => this.setState({ hidePass: !this.state.hidePass })}
+          >
+            <Text style={{ color: "#0A79DF" }}>Show</Text>
+          </TouchableOpacity>
         </CardSection>
+
         <CardSection>
           <CustomTextInput
             label="Name"
@@ -128,3 +222,9 @@ export default class SignUpForm extends Component {
     );
   }
 }
+const Styles = StyleSheet.create({
+  imageHolder: { alignSelf: "center", height: 100, width: 100 },
+  button: {
+    margin: 20
+  }
+});
