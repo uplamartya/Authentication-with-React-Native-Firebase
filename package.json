@@ -14,6 +14,7 @@
     "react-native-camera": "git+https://git@github.com/react-native-community/react-native-camera.git",
     "react-native-fetch-blob": "^0.10.8",
     "react-native-gesture-handler": "^1.0.17",
+    "react-native-material-menu": "^0.4.2",
     "react-native-vector-icons": "^6.4.2",
     "react-navigation": "^3.3.2"
   },

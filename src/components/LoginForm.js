@@ -15,7 +15,7 @@ export default class LoginForm extends Component {
     loading: false,
     error: ""
   };
-
+  //On LoginButton Press
   onLoginPress() {
     this.setState({ error: "", loading: true });
     //get email and password
@@ -48,7 +48,7 @@ export default class LoginForm extends Component {
           this.renderButton();
       });
   }
-
+  //ButtonRendering
   renderButton() {
     if (this.state.loading) {
       return <Spinner size="large" />;
@@ -59,6 +59,7 @@ export default class LoginForm extends Component {
 
   render() {
     return (
+      //Rendering form for login
       <Card>
         <CardSection>
           <CustomTextInput
@@ -83,6 +84,7 @@ export default class LoginForm extends Component {
         <CardSection>{this.renderButton()}</CardSection>
 
         <CardSection>
+        
           <Button
             onPress={() => {
               this.props.navigation.navigate("SignUpForm");

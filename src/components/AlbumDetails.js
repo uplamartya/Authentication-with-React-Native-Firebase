@@ -8,6 +8,7 @@ const AlbumDetails = props => {
   console.log(props.data.title);
 
   return (
+    //Rendering a Single Card[with Data] For Each Albums
     <Card>
       <CardSection>
         <View style={Styles.thumbnailContainerStyle}>
@@ -32,7 +33,7 @@ const AlbumDetails = props => {
     </Card>
   );
 };
-
+//Styles
 const Styles = {
   headerStyle: {
     flexDirection: "column",
@@ -60,5 +61,5 @@ const Styles = {
     width: null
   }
 };
-
+//Export Class
 export default AlbumDetails;

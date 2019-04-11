@@ -32,7 +32,7 @@ export default class SignUpForm extends Component {
     downloadImgUrl: "",
     hidePass: true
   };
-
+//Upload clicked Image to firebase
   uploadImage(data) {
     const image = data.mediaUri;
     console.log("uri", image);
@@ -71,7 +71,7 @@ export default class SignUpForm extends Component {
         console.log(error);
       });
   }
-
+//save Uploaded Image Download url to database with other user data
   SaveDataToDb() {
     const { name, address, downloadImgUrl } = this.state;
     firebase.auth().onAuthStateChanged(user => {
@@ -108,6 +108,7 @@ export default class SignUpForm extends Component {
     });
     this.props.navigation.navigate("Index");
   }
+  //Onsignup Button press
   onSignUpPress() {
     const { email, password, name, address } = this.state;
     let photo = this.props.navigation.getParam("photo", "empty");
@@ -128,14 +129,14 @@ export default class SignUpForm extends Component {
         });
     }
   }
-
+//On signUp success
   onSignUpSuccess() {
     let photo = this.props.navigation.getParam("photo", "empty");
     if (photo !== "empty") {
       this.uploadImage(photo);
     }
   }
-
+//Render Button
   renderButton() {
     if (this.state.loading) {
       return <Spinner size="large" />;
@@ -145,8 +146,10 @@ export default class SignUpForm extends Component {
   }
 
   render() {
+    //Fetch data from previous View/Screen
     let photo = this.props.navigation.getParam("photo", "empty");
     return (
+      //Rendering Form for registration
       <Card>
         <CardSection>
           <View
@@ -166,6 +169,7 @@ export default class SignUpForm extends Component {
               />
             </TouchableWithoutFeedback>
             <TouchableOpacity
+            //Redirecting to Camera View
               onPress={() => this.props.navigation.navigate("CameraSc")}
             >
               <Text style={{ color: "#0A79DF", padding: 5 }}>

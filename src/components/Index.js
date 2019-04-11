@@ -29,6 +29,7 @@ export class Index extends Component {
   };
 
   componentDidMount() {
+    //FireBase Configuration
     var config = {
       apiKey: "AIzaSyB4rL_8Pzy2Iv56SUzEU2chaIvmKfsXH9c",
       authDomain: "reactnativeauth-a3cd3.firebaseapp.com",
@@ -40,6 +41,7 @@ export class Index extends Component {
     if (!firebase.apps.length) {
       firebase.initializeApp(config);
     }
+    //Check if user already loggedIn or Not
     firebase.auth().onAuthStateChanged(user => {
       if (user) {
         var recentPostsRef = firebase.database().ref(`/Users/${user.uid}`);
@@ -67,49 +69,15 @@ export class Index extends Component {
   }
   componentWillUnmount() {}
 
-  onLogoutPress() {
-    Alert.alert(
-      //title
-      "LogOut",
-      //body
-      "Do you want to LogOut?",
-      [
-        {
-          text: "Yes",
-          onPress: () => {
-            firebase
-              .auth()
-              .signOut()
-              .then(
-                ToastAndroid.show(
-                  "Successfully Logged Out !",
-                  ToastAndroid.SHORT
-                )
-              )
-              .catch(err => console.log(err.message));
-          }
-        },
-        {
-          text: "No",
-          onPress: () => console.log("No Pressed"),
-          style: "cancel"
-        }
-      ],
-      { cancelable: true }
-      //clicking out side of alert will be cancel
-    );
-    /* firebase
-      .auth()
-      .signOut()
-      .then(ToastAndroid.show("Successfully Logged Out !", ToastAndroid.SHORT))
-      .catch(err => console.log(err.message)); */
-  }
+  
 
   renderComponents() {
     switch (this.state.loggedIn) {
       case true:
+      //If user loggedIn , Then Redirect to Dashboard
         this.props.navigation.replace("Dashboard");
       case false:
+      //If user not loggedIn , Then Render to LoginPage
         return <LoginForm navigation={this.props.navigation} />;
 
       default:
@@ -125,6 +93,7 @@ export class Index extends Component {
 
   render() {
     const { navigate } = this.props.navigation;
+    //Render views depending in user logged in or not 
     return <View style={{ flex: 1 }}>{this.renderComponents()}</View>;
   }
 }

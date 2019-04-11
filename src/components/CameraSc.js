@@ -11,7 +11,7 @@ export default class CameraSc extends React.Component {
       mirror: false
     };
   }
-
+//Method to handle back / front Camera
   cameraTypeHandler = () => {
     if (this.state.cameraType === "back") {
       this.setState({
@@ -58,7 +58,7 @@ export default class CameraSc extends React.Component {
       </View>
     );
   }
-
+ //Method Responsible for capturing image & send it the Home Screen
   takePicture() {
     const options = {};
 

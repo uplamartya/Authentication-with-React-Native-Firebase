@@ -1,12 +1,12 @@
+//IMPORTS
 import React, { Component } from "react";
 import { createStackNavigator, createAppContainer } from "react-navigation";
-
 import SignUpForm from "./src/components/SignUpForm";
 import Index from "./src/components/Index";
 import CameraSc from "./src/components/CameraSc";
 import Dashboard from "./src/components/Dashboard";
-import Icon from "react-native-vector-icons/SimpleLineIcons";
 
+//STACKNAVIGATION
 const Root = createStackNavigator({
   Index: {
     screen: Index
@@ -16,6 +16,11 @@ const Root = createStackNavigator({
   },
   Dashboard: {
     screen: Dashboard
+    /*   navigationOptions: {
+      headerTitle: "Albums",
+      headerRight: <TabNav />,
+      headerLeft: null
+    } */
   },
   CameraSc: {
     screen: CameraSc
